@@ -9,9 +9,15 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-// GET all products
+// 🔁 GET all products with department name using JOIN
 app.get('/api/products', (req, res) => {
-  db.all('SELECT * FROM products', (err, rows) => {
+  const query = `
+    SELECT products.id, products.name, products.description, products.price, departments.name AS department
+    FROM products
+    JOIN departments ON products.department_id = departments.id
+  `;
+
+  db.all(query, (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else {
@@ -20,10 +26,18 @@ app.get('/api/products', (req, res) => {
   });
 });
 
-// GET product by ID
+// 🔁 GET single product by ID with department name
 app.get('/api/products/:id', (req, res) => {
   const productId = req.params.id;
-  db.get('SELECT * FROM products WHERE id = ?', [productId], (err, row) => {
+
+  const query = `
+    SELECT products.id, products.name, products.description, products.price, departments.name AS department
+    FROM products
+    JOIN departments ON products.department_id = departments.id
+    WHERE products.id = ?
+  `;
+
+  db.get(query, [productId], (err, row) => {
     if (err) {
       res.status(500).json({ error: err.message });
     } else if (!row) {
